@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <title>Pokedex</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, user-scalable=no">
+
+  <link href="https://fonts.googleapis.com/css?family=Courier+Prime&display=swap" rel="stylesheet">
+  <link rel="shortcut icon" href="img/pokeball_sprite.png" />
+
+  <style>
+    body {
+      background: #A7A4C5;
+    }
+
+    input {
+      padding: .8rem;
+    }
+
+    .hide {
+      display: none;
+    }
+
+    .show {
+      display: block;
+    }
+
+    .input-area {
+      padding: 20px;
+      align-items: center;
+    }
+
+    .content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .pokedex-wrapper {
+      max-width: 42vh;
+      height: auto;
+      margin-top: 4rem;
+      overflow-y: auto;
+    }
+
+    img.pokedex {
+      width: 100%;
+      min-width: 411px;
+    }
+
+    .photo img,
+    .description span {
+      position: relative;
+      transform: rotate(-3deg);
+    }
+
+    .description span.poke-info {
+      font-family: 'Courier Prime', monospace;
+      color: white;
+      top: -303px;
+      left: 239px;
+    }
+
+    .photo img {
+      top: -196px;
+      left: 72px;
+      z-index: -1;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="content">
+    <div class="input-area">
+      <input placeholder="Write a Pokemon name here">
+    </div>
+
+    <div>
+      <div class="pokedex-wrapper">
+        <img class="pokedex" src="img/pokedex.png" alt="A Pokedex" />
+        <div class="photo">
+          <img width="73px" />
+        </div>
+        <div class="description">
+          <span class="poke-info hide">
+            Type: <span id="type"></span><br>
+            weight: <span id="weight"></span><br>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+
+<script>
+  const xmlHttp = new XMLHttpRequest();
+  const pokemonInput = document.querySelector('input');
+  const apiUrl = 'https://pokeapi.co/api/v2/pokemon/';
+
+  const debounced = debounce(getPokemon, 1500);
+
+  pokemonInput.addEventListener('input', debounced);
+
+  function getPokemon(event) {
+    const pokemonName = event.srcElement.value;
+    const pokemon = get(apiUrl, pokemonName.toLowerCase());
+
+    setPokemon(JSON.parse(pokemon));
+  }
+
+  function formatToThreeNumbers(number) {
+    while (number.toString().length < 3) {
+      number = '0' + number;
+    }
+
+    return number;
+  }
+
+  function setPokemon(pokemon) {
+    const photoElement = document.querySelector('.photo img');
+    const descriptionElements = {
+      descriptionItself: document.querySelector('span.poke-info'),
+      type: document.querySelector('.description #type'),
+      weight: document.querySelector('.description #weight')
+    }
+
+    const pokemonId = formatToThreeNumbers(pokemon.id);
+    const pokemonImage = `https://assets.pokemon.com/assets/cms2/img/pokedex/full/${pokemonId}.png`;
+
+    photoElement.setAttribute('src', pokemonImage);
+
+    descriptionElements.descriptionItself.className = 'show';
+    descriptionElements.descriptionItself.className = 'poke-info';
+
+    descriptionElements.type.innerHTML = pokemon.types[0].type.name;
+    descriptionElements.weight.innerHTML = pokemon.weight + 'p';
+  }
+
+
+  function get(url, path) {
+    xmlHttp.open('GET', url + path, false);
+    xmlHttp.send(null);
+    return xmlHttp.responseText;
+  }
+
+  function debounce(func, wait) {
+    let timeout;
+    return function (...args) {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        func.apply(this, args);
+      }, wait);
+    };
+  }
+
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.15/lodash.core.js"
+  integrity="sha256-tsIbwIT+4qFYQl3lJqYOZst6ot+JaR73T5eusuTukXM=" crossorigin="anonymous"></script>
+
+</html>
